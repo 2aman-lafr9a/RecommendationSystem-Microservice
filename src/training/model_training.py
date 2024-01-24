@@ -17,21 +17,6 @@ os.chdir(script_dir)
 file_path = os.path.join(script_dir, "preprocessed_data_v1.csv")
 df_players = pd.read_csv(file_path)
 
-# Connect to the PostgreSQL databases with different ports
-# ratings_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5433, 'postgres', 'postgres', 'rating_management')
-# insurances_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5432, 'postgres', 'postgres', 'agency_offers_database')
-
-# Extract data from the ratings and insurances tables
-# df_ratings = extract_ratings_data(ratings_conn)
-
-# print(df_ratings)
-
-
-# df_insurances = extract_insurances_data(insurances_conn)
-
-# Close the database connections
-# close_connection(ratings_conn)
-# close_connection(insurances_conn)
 
 print(df_players.head())
 
@@ -71,34 +56,6 @@ plt.title('K-Means Clustering Based on Value(£) and Overall')
 plt.xlabel('Overall')
 plt.ylabel('Value(£)')
 plt.show()
-
-# Compute Davies-Bouldin Index
-# davies_bouldin = davies_bouldin_score(X_standardized, df_players['Cluster_Labels'])
-# print(f"Davies-Bouldin Index: {davies_bouldin}")
-
-# # Compute Silhouette Score
-# silhouette_avg = silhouette_score(X_standardized, df_players['Cluster_Labels'])
-# print(f"Silhouette Score: {silhouette_avg}")
-
-# Compute cluster characteristics
-# cluster_counts = df_players['Cluster_Labels'].value_counts().sort_index()
-# cluster_means = df_players.groupby('Cluster_Labels').mean()[['Value(£)', 'Overall']]
-
-# Visualize cluster characteristics
-# plt.figure(figsize=(12, 8))
-# plt.subplot(2, 1, 1)
-# sns.barplot(x=cluster_counts.index, y=cluster_counts)
-# plt.title('Number of Rows in Each Cluster')
-
-# plt.subplot(2, 1, 2)
-# sns.barplot(x=cluster_means.index, y=cluster_means['Overall'])
-# plt.title('Average Overall Rating for Each Cluster')
-
-# plt.tight_layout()
-# plt.show()
-
-# print("Cluster Characteristics (Mean Values):")
-# print(cluster_means)
 
 print("DataFrame with Cluster Assignment:")
 print(df_players[['Name', 'Value(£)', 'Overall', 'Cluster_Labels']])
