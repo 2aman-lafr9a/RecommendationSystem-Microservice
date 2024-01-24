@@ -7,6 +7,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import davies_bouldin_score, silhouette_score
 import os
 
+# from ...connection.database_connection import connect_to_database, extract_ratings_data, extract_insurances_data, close_connection
+
 # Set the working directory to the location of your script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
@@ -14,6 +16,22 @@ os.chdir(script_dir)
 # Construct the file path using os.path.join
 file_path = os.path.join(script_dir, "preprocessed_data_v1.csv")
 df_players = pd.read_csv(file_path)
+
+# Connect to the PostgreSQL databases with different ports
+# ratings_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5433, 'postgres', 'postgres', 'rating_management')
+# insurances_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5432, 'postgres', 'postgres', 'agency_offers_database')
+
+# Extract data from the ratings and insurances tables
+# df_ratings = extract_ratings_data(ratings_conn)
+
+# print(df_ratings)
+
+
+# df_insurances = extract_insurances_data(insurances_conn)
+
+# Close the database connections
+# close_connection(ratings_conn)
+# close_connection(insurances_conn)
 
 print(df_players.head())
 
@@ -92,3 +110,4 @@ df_players['playerId'] = range(1, len(df_players) + 1)
 df_players.to_csv("clustered_players.csv", index=False)
 pd.to_pickle(scaler, "scaler_model.pkl")
 pd.to_pickle(kmeans, "kmeans_model.pkl")
+
