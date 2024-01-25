@@ -243,6 +243,18 @@ services:
         - DELETE_TOPIC_ENABLE=true
     depends_on:
         - zookeeper
+
+  
+  cassandra:
+    image: cassandra:latest
+    container_name: cassandra
+    ports:
+      - "9042:9042"  
+    environment:
+      - CASSANDRA_CLUSTER_NAME=ta2min  
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    volumes:
+      - ./cassandra_data:/var/lib/cassandra  
         
 
 volumes:
