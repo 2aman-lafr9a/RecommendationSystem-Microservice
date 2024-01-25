@@ -4,17 +4,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import davies_bouldin_score, silhouette_score
 import os
 
-# from ...connection.database_connection import connect_to_database, extract_ratings_data, extract_insurances_data, close_connection
 
 # Set the working directory to the location of your script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # Construct the file path using os.path.join
-file_path = os.path.join(script_dir, "preprocessed_data_v1.csv")
+file_path = os.path.join(script_dir, "../../data/processed/preprocessed_data_v1.csv")
 df_players = pd.read_csv(file_path)
 
 
@@ -64,7 +62,7 @@ print(df_players[['Name', 'Value(£)', 'Overall', 'Cluster_Labels']])
 df_players['playerId'] = range(1, len(df_players) + 1)
 
 # Save the updated players dataset
-df_players.to_csv("clustered_players.csv", index=False)
-pd.to_pickle(scaler, "scaler_model.pkl")
-pd.to_pickle(kmeans, "kmeans_model.pkl")
+df_players.to_csv("../../data/trained/clustered_players.csv", index=False)
+pd.to_pickle(scaler, "../model/scaler_model.pkl")
+pd.to_pickle(kmeans, "../model/kmeans_model.pkl")
 

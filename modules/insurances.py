@@ -66,12 +66,14 @@ def query_all_insurances(session):
     for row in result:
         print(row)
 
+
 def close_connection(cluster):
     cluster.shutdown()
     print("Connection closed")
 
 if __name__ == "__main__":
     session = connect_to_cassandra()
+
     # drop_insurances_table(session)
     create_insurances_table(session)
 

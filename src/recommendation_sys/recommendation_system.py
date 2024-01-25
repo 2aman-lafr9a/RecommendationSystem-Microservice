@@ -6,13 +6,24 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import precision_score, recall_score, f1_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
+
 import os
+import sys
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the project root directory
+project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+sys.path.append(project_root)
+
+from connection.database_connection import connect_to_database, extract_ratings_data, extract_insurances_data, close_connection
+
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # Construct the file path using os.path.join
-file_path = os.path.join(script_dir, "clustered_players.csv")
+file_path = os.path.join(script_dir, "../../data/trained/clustered_players.csv")
 df_players = pd.read_csv(file_path)
 
 def recommendation_system(player_data):
@@ -21,12 +32,27 @@ def recommendation_system(player_data):
     os.chdir(script_dir)
 
     # Load clustered players data
-    file_path = os.path.join(script_dir, "clustered_players.csv")
+    file_path = os.path.join(script_dir, "../../data/trained/clustered_players.csv")
     df_players = pd.read_csv(file_path)
 
+    # print(df_players.head())
+
     # Load scaler and kmeans model
-    scaler = pd.read_pickle("scaler_model.pkl")
-    kmeans = pd.read_pickle("kmeans_model.pkl")
+    scaler = pd.read_pickle("../model/scaler_model.pkl")
+    kmeans = pd.read_pickle("../model/kmeans_model.pkl")
+
+     # Connect to the PostgreSQL databases with different ports
+    ratings_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5433, 'postgres', 'postgres', 'rating_management')
+    #!! insurances_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5432, 'postgres', 'postgres', 'agency_offers_database')
+
+    # Extract data from the ratings and insurances tables
+    df_ratings = extract_ratings_data(ratings_conn)
+    #!! df_insurances = extract_insurances_data(insurances_conn)
+
+
+    print("---------------df_ratings----------")
+    print(df_ratings)
+    print("---------------df_ratings----------")
 
     # Classify and add new user
     df_players = classify_and_add_user(pd.DataFrame([player_data]), df_players, kmeans, scaler)
@@ -47,8 +73,11 @@ def recommendation_system(player_data):
     player_id = player_data['playerId']
     cluster_insurances = insurance_of_cluster_players(player_id, df_players, df_insurances)
 
-    # Generate ratings data
-    ratings_data = generate_ratings_data(player_id, cluster_insurances, df_players)
+    # Check if the extracted data is sufficient
+    if len(df_ratings) < 10 or len(df_insurances) < 10:
+        # Generate fake data in casee if the getting rating data from database is fake 
+        ratings_data = generate_ratings_data(player_id, cluster_insurances, df_players)
+    
 
     # Create the ratings DataFrame
     df_ratings = pd.DataFrame(ratings_data)
@@ -66,7 +95,7 @@ def recommendation_system(player_data):
 
     # Export predictions to CSV
     predictions_df = pd.DataFrame(list(predictions.items()), columns=['Insurance', 'Predicted_Rating'])
-    csv_filename = f'predictions_{player_id}.csv'
+    csv_filename = f'../../data/recommended/predictions_{player_id}.csv'
     predictions_df.to_csv(csv_filename, index=False)
 
     return top_recommendations, csv_filename

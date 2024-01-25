@@ -47,7 +47,8 @@ def recommend():
     # send_to_kafka_recommendations(recommendations)
 
     # Return the recommendations as JSON
-    return jsonify({'recommendations': recommendations})
+    # return jsonify({'recommendations': recommendations})
+    return jsonify({'msg': "Hello world!"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

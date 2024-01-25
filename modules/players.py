@@ -23,7 +23,6 @@ def drop_players_table(session):
 def create_players_table(session):
     table_query = """
         CREATE TABLE IF NOT EXISTS players (
-            playerId INT PRIMARY KEY,
             Name TEXT,
             Age DOUBLE,
             Overall DOUBLE,
@@ -33,7 +32,8 @@ def create_players_table(session):
             Overall_Group TEXT,
             Log_Value DOUBLE,
             Age_Rating DOUBLE,
-            Cluster_Labels INT
+            Cluster_Labels INT,
+            playerId INT PRIMARY KEY
         )
     """
     session.execute(table_query)
@@ -83,7 +83,7 @@ def close_connection(cluster):
 if __name__ == "__main__":
     session = connect_to_cassandra()
     # drop_players_table(session)
-    # create_players_table(session)
+    create_players_table(session)
 
     # sample_data = {
     #   # "playerId": 1, 
