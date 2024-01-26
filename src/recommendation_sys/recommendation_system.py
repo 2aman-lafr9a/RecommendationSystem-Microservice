@@ -6,13 +6,24 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import precision_score, recall_score, f1_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
+
 import os
+import sys
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the project root directory
+project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+sys.path.append(project_root)
+
+from connection.database_connection import connect_to_database, extract_ratings_data, extract_insurances_data, close_connection
+
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # Construct the file path using os.path.join
-file_path = os.path.join(script_dir, "clustered_players.csv")
+file_path = os.path.join(script_dir, "../../data/trained/clustered_players.csv")
 df_players = pd.read_csv(file_path)
 
 def recommendation_system(player_data):
@@ -21,12 +32,27 @@ def recommendation_system(player_data):
     os.chdir(script_dir)
 
     # Load clustered players data
-    file_path = os.path.join(script_dir, "clustered_players.csv")
+    file_path = os.path.join(script_dir, "../../data/trained/clustered_players.csv")
     df_players = pd.read_csv(file_path)
 
+    # print(df_players.head())
+
     # Load scaler and kmeans model
-    scaler = pd.read_pickle("scaler_model.pkl")
-    kmeans = pd.read_pickle("kmeans_model.pkl")
+    scaler = pd.read_pickle("../model/scaler_model.pkl")
+    kmeans = pd.read_pickle("../model/kmeans_model.pkl")
+
+     # Connect to the PostgreSQL databases with different ports
+    ratings_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5433, 'postgres', 'postgres', 'rating_management')
+    #!! insurances_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5432, 'postgres', 'postgres', 'agency_offers_database')
+
+    # Extract data from the ratings and insurances tables
+    df_ratings = extract_ratings_data(ratings_conn)
+    #!! df_insurances = extract_insurances_data(insurances_conn)
+
+
+    print("---------------df_ratings----------")
+    print(df_ratings)
+    print("---------------df_ratings----------")
 
     # Classify and add new user
     df_players = classify_and_add_user(pd.DataFrame([player_data]), df_players, kmeans, scaler)
@@ -47,15 +73,43 @@ def recommendation_system(player_data):
     player_id = player_data['playerId']
     cluster_insurances = insurance_of_cluster_players(player_id, df_players, df_insurances)
 
-    # Generate ratings data
-    ratings_data = generate_ratings_data(player_id, cluster_insurances, df_players)
+    # Check if the extracted data is sufficient
+    if len(df_ratings) < 10:
+        # Generate fake data in casee if the getting rating data from database is fake 
+        ratings_data = generate_ratings_data(player_id, cluster_insurances, df_players)
+    
 
-    # Create the ratings DataFrame
     df_ratings = pd.DataFrame(ratings_data)
+
+    # Check if the player_id already exists in df_ratings
+    existing_player_rows = df_ratings[df_ratings['playerId'] == player_id]
+
+    # Check if there are no rows for the player_id
+    if len(existing_player_rows) == 0:
+        # Choose 5 random insurances from the cluster
+        num_insurance_choices = min(3, len(cluster_insurances))
+        selected_insurances = np.random.choice(cluster_insurances['insuranceId'], size=num_insurance_choices, replace=False)
+
+        # Generate random ratings between 1 and 5 for the new player
+        new_player_ratings = {
+            'playerId': np.full(num_insurance_choices, player_id),
+            'insuranceId': selected_insurances.tolist(),
+            'rating': np.random.randint(1, 6, size=num_insurance_choices),
+            'timestamp': np.full(num_insurance_choices, datetime.now()).tolist()
+        }
+
+        new_player_ratings_df = pd.DataFrame(new_player_ratings)
+
+        # Append the new player's ratings to the existing df_ratings
+        df_ratings = pd.concat([df_ratings, new_player_ratings_df], ignore_index=True)
+
+    print(df_ratings[df_ratings['playerId'] == player_id])
+    print("--------------------")
+
 
     # Create the user-item matrix
     user_item_matrix = pd.pivot_table(df_ratings, values='rating', index='playerId', columns='insuranceId', fill_value=0)
-
+    print(user_item_matrix[user_item_matrix.index == player_id])
     # Fit NearestNeighbors
     nn_model = NearestNeighbors(metric='cosine', algorithm='brute')
     nn_model.fit(user_item_matrix)
@@ -64,9 +118,19 @@ def recommendation_system(player_data):
     predictions = user_to_user_predictions(player_id, df_ratings, user_item_matrix, nn_model)
     top_recommendations = top_k_recommendations(predictions, k=10)
 
+    if not top_recommendations:
+        cluster_insurance_ratings = df_ratings[df_ratings['insuranceId'].isin(cluster_insurances['insuranceId'])]
+
+        sorted_cluster_insurance_ratings = cluster_insurance_ratings.sort_values(by='rating', ascending=False)
+
+        selected_insurance_ids = sorted_cluster_insurance_ratings['insuranceId'].unique()[:3]
+
+        top_recommendations = sorted(selected_insurance_ids, key=lambda x: sorted_cluster_insurance_ratings[sorted_cluster_insurance_ratings['insuranceId'] == x]['rating'].iloc[0], reverse=True)
+
+
     # Export predictions to CSV
     predictions_df = pd.DataFrame(list(predictions.items()), columns=['Insurance', 'Predicted_Rating'])
-    csv_filename = f'predictions_{player_id}.csv'
+    csv_filename = f'../../data/recommended/predictions_{player_id}.csv'
     predictions_df.to_csv(csv_filename, index=False)
 
     return top_recommendations, csv_filename
@@ -126,7 +190,7 @@ def find_candidate_items(player_id, neighbors_model, user_item_matrix, df_rating
     player_indices = user_item_matrix.index.get_indexer_for([player_id])
 
     # Query for neighbors
-    _, neighbor_indices = neighbors_model.kneighbors([user_item_matrix.iloc[player_indices[0]]], n_neighbors=5)
+    _, neighbor_indices = neighbors_model.kneighbors([user_item_matrix.iloc[player_indices[0]]], n_neighbors=20)
 
     # Flatten the array of neighbor indices
     neighbor_indices = neighbor_indices.flatten()
@@ -143,7 +207,7 @@ def find_candidate_items(player_id, neighbors_model, user_item_matrix, df_rating
     candidate_items = [item for item in candidate_items if item not in active_player_ratings]
 
     # Return the top 5 candidate items
-    return candidate_items[:5]
+    return candidate_items[:]
 
 
 def predict_ratings(active_player_index, user_item_matrix, cosine_sim, candidates):
@@ -212,6 +276,10 @@ def user_to_user_predictions(active_player_id, df_ratings, user_item_matrix, nn_
     active_player_index = active_player_indices[0]
 
     candidates = find_candidate_items(active_player_id, nn_model, user_item_matrix, df_ratings)
+    print("-------Candidats-------")
+    print(candidates)
+    print("-------Candidats-------")
+
     if cosine_sim.shape[0] <= active_player_index:
         return {}
 
