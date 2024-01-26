@@ -72,4 +72,5 @@ if __name__ == "__main__":
 
         query_data(session)
 
+        # Close the connection
         close_connection(session.cluster)
