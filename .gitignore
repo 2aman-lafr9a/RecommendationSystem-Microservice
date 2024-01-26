@@ -1,3 +1,4 @@
 /config/config.yaml
 logs
 cassandra_data
+.env
