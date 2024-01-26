@@ -146,7 +146,7 @@ def recommendation_system(player_data):
 
     # Export predictions to CSV
     predictions_df = pd.DataFrame(list(predictions.items()), columns=['Insurance', 'Predicted_Rating'])
-    csv_filename = f'../../data/recommended/predictions_{player_id}.csv'
+    csv_filename = f'../../data/recommended/predictions.csv'
     predictions_df.to_csv(csv_filename, index=False)
 
     return top_recommendations, csv_filename

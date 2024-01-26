@@ -1,0 +1,5 @@
+outs:
+- md5: 7b692cb1ea04ff0cb74339f58ac98a40
+  size: 2580773
+  hash: md5
+  path: clustered_players.csv
