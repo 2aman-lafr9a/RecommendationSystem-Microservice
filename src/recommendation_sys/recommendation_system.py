@@ -6,9 +6,16 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import precision_score, recall_score, f1_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-
+# from dotenv import load_dotenv
+from dotenv import dotenv_values
 import os
 import sys
+
+config = dotenv_values()
+# load_dotenv()
+
+# DB_HOST = config.get("DB_HOST")
+# print(secret_key)
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -17,6 +24,15 @@ project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
 sys.path.append(project_root)
 
 from connection.database_connection import connect_to_database, extract_ratings_data, extract_insurances_data, close_connection
+
+
+DB_HOST = config.get("DB_HOST")
+DB_PORT = config.get("DB_PORT")
+DB_USER = config.get("DB_USER")
+DB_PASSWORD = config.get("DB_PASSWORD")
+DB_NAME = config.get("DB_NAME")
+
+# print(DB_HOST)
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -42,7 +58,7 @@ def recommendation_system(player_data):
     kmeans = pd.read_pickle("../model/kmeans_model.pkl")
 
      # Connect to the PostgreSQL databases with different ports
-    ratings_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5433, 'postgres', 'postgres', 'rating_management')
+    ratings_conn = connect_to_database(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
     #!! insurances_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5432, 'postgres', 'postgres', 'agency_offers_database')
 
     # Extract data from the ratings and insurances tables
@@ -50,9 +66,9 @@ def recommendation_system(player_data):
     #!! df_insurances = extract_insurances_data(insurances_conn)
 
 
-    print("---------------df_ratings----------")
-    print(df_ratings)
-    print("---------------df_ratings----------")
+    # print("---------------df_ratings----------")
+    # print(df_ratings)
+    # print("---------------df_ratings----------")
 
     # Classify and add new user
     df_players = classify_and_add_user(pd.DataFrame([player_data]), df_players, kmeans, scaler)
@@ -103,8 +119,8 @@ def recommendation_system(player_data):
         # Append the new player's ratings to the existing df_ratings
         df_ratings = pd.concat([df_ratings, new_player_ratings_df], ignore_index=True)
 
-    print(df_ratings[df_ratings['playerId'] == player_id])
-    print("--------------------")
+    # print(df_ratings[df_ratings['playerId'] == player_id])
+    # print("--------------------")
 
 
     # Create the user-item matrix
@@ -276,9 +292,9 @@ def user_to_user_predictions(active_player_id, df_ratings, user_item_matrix, nn_
     active_player_index = active_player_indices[0]
 
     candidates = find_candidate_items(active_player_id, nn_model, user_item_matrix, df_ratings)
-    print("-------Candidats-------")
-    print(candidates)
-    print("-------Candidats-------")
+    # print("-------Candidats-------")
+    # print(candidates)
+    # print("-------Candidats-------")
 
     if cosine_sim.shape[0] <= active_player_index:
         return {}
