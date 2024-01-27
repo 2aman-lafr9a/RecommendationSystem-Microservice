@@ -13,10 +13,11 @@ jobs:
           # Your ML workflow goes here
           python -m pip install --upgrade pip
           
-          python -m pip install contourpy==0.0.1  
+          python -m pip install contourpy
 
           # Install other dependencies from requirements.txt
           python -m pip install -r requirements.txt
+          
           python src/data_preprocessing/preprocessing_script.py
 
           echo "## Pre-processing metrics" > report.md
