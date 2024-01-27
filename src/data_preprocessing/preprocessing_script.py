@@ -12,7 +12,7 @@ import os
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
-file_path = os.path.join(script_dir, "../../data/raw/players_football_ds.csv")
+file_path = os.path.join(script_dir, "data/raw/players_football_ds.csv")
 
 df = pd.read_csv(file_path)
 df.head()
