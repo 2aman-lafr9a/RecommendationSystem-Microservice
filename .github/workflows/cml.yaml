@@ -21,4 +21,5 @@ jobs:
           cml-publish ./images/cleaned_distribution.png >> report.md
           cml-publish ./images/original_distribution.png >> report.md
           cml-publish ./images/log_transformed_distribution.png >> report.md
+          
         
