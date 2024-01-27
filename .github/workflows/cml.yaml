@@ -11,12 +11,18 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Your ML workflow goes here
-          # python -m pip install --upgrade pip
+          python -m pip install --upgrade pip
           
           # python -m pip install contourpy
 
           # Install other dependencies from requirements.txt
           # python -m pip install -r requirements.txt
+
+          pip install pandas
+          pip install numpy
+          pip install seaborn
+          pip install scikit-learn
+          pip install matplotlib
           
           python src/data_preprocessing/preprocessing_script.py
 
