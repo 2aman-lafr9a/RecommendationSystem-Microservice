@@ -14,8 +14,11 @@ jobs:
         run: |
           # Your ML workflow goes here
           pip install -r requirements.txt
-          python train.py
+          python ./src/data_preprocessing/preprocessing_script.py
 
-          echo "Clustered players"
-          cat prediction.csv
+          echo "## Pre-processing metrics" > report.md
+          echo "### Data viz" >> report.md
+          cml-publish ./images/cleaned_distribution.png >> report.md
+          cml-publish ./images/original_distribution.png >> report.md
+          cml-publish ./images/log_transformed_distribution.png >> report.md
         
