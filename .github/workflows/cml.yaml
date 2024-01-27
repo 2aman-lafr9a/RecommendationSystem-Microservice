@@ -20,11 +20,11 @@ jobs:
           echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
 
       - name: Update Pip
-        run: python -m pip install --upgrade pip
+        run: pip install --upgrade pip
 
       - name: Install dependencies
         run: |
-          python -m pip install -r requirements.txt
+          pip install -r requirements.txt
 
       - name: Train model
         env:
