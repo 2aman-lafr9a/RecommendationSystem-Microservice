@@ -1,19 +1,38 @@
 name: model-recommendation-system
-on: [push]
+
+on:
+  push:
+    branches:
+      - main
+      
 jobs:
   run:
-    runs-on: ubuntu-latest 
-    # optionally use a convenient Ubuntu LTS + DVC + CML image
+    runs-on: ubuntu-latest
+
     container: ghcr.io/iterative/cml:0-dvc2-base1
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: iterative/setup-cml@v1
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up CML
+        uses: iterative/setup-cml@v1
+
+      - name: Set Python version
+        run: |
+          echo "::set-env name=PYTHON_VERSION::3.9"
+
+      - name: Update Pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+
       - name: Train model
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Your ML workflow goes here
-          pip install -r requirements.txt
           python ./src/data_preprocessing/preprocessing_script.py
 
           echo "## Pre-processing metrics" > report.md
@@ -21,5 +40,3 @@ jobs:
           cml-publish ./images/cleaned_distribution.png >> report.md
           cml-publish ./images/original_distribution.png >> report.md
           cml-publish ./images/log_transformed_distribution.png >> report.md
-          
-        
