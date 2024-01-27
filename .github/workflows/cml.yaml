@@ -2,23 +2,32 @@ name: model-recommendation-system
 on: [push]
 jobs:
   run:
-    runs-on: ubuntu-latest 
-    # optionally use a convenient Ubuntu LTS + DVC + CML image
-    container: ghcr.io/iterative/cml:0-dvc2-base1
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml-py3:latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: iterative/setup-cml@v1
-      - name: Train model
+      - uses: actions/checkout@v2
+      - name: 'Train the model'
         env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Your ML workflow goes here
-          pip install -r requirements.txt
-          python ./src/data_preprocessing/preprocessing_script.py
+          python -m pip install --upgrade pip
+          
+          # python -m pip install contourpy
+
+          # Install other dependencies from requirements.txt
+          # python -m pip install -r requirements.txt
+
+          pip install pandas
+          pip install numpy
+          pip install seaborn
+          pip install scikit-learn
+          pip install matplotlib
+          
+          python src/data_preprocessing/preprocessing_script.py
 
           echo "## Pre-processing metrics" > report.md
           echo "### Data viz" >> report.md
-          cml-publish ./images/cleaned_distribution.png >> report.md
-          cml-publish ./images/original_distribution.png >> report.md
-          cml-publish ./images/log_transformed_distribution.png >> report.md
-        
+          cml-publish images/cleaned_distribution.png >> report.md
+          cml-publish images/original_distribution.png >> report.md
+          cml-publish images/log_transformed_distribution.png >> report.md
