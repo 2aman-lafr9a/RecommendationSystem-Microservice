@@ -1,50 +1,17 @@
 name: model-recommendation-system
-
 on: [push]
-
 jobs:
   run:
-    runs-on: ubuntu-latest
-
-    container: ghcr.io/iterative/cml:0-dvc2-base1
-    
-    strategy:
-        matrix:
-            python-version: [3.9]
-            
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml-py3:latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up CML
-        uses: iterative/setup-cml@v1
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-      # - name: Set Actions Allow Unsecure Commands
-      #   run: |
-      #     echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
-      
-      # - uses: actions/setup-python@v4
-      
-      # - name: Update Pip
-      #   run: python -m pip install --upgrade pip
-
-      # - name: Install dependencies
-      #   run: |
-      #     python -m pip install -r requirements.txt
-
-      - name: Train model
+      - name: 'Train the model'
         env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Your ML workflow goes here
+          pip install -r requirements.txt
           python src/data_preprocessing/preprocessing_script.py
 
           echo "## Pre-processing metrics" > report.md
