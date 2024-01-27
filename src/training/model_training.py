@@ -40,7 +40,8 @@ plt.plot(possible_k_values, inertia, marker='o')
 plt.title('Elbow Method for Optimal k')
 plt.xlabel('Number of Clusters (k)')
 plt.ylabel('Inertia')
-plt.show()
+plt.savefig(os.path.join(script_dir, "../../images/elbow_curve.png"))
+plt.close()
 
 # Choose the optimal value of k based on the elbow method analysis
 optimal_k = 4
@@ -53,7 +54,8 @@ plt.scatter(df_players['Overall'], df_players['Value(£)'], c=df_players['Cluste
 plt.title('K-Means Clustering Based on Value(£) and Overall')
 plt.xlabel('Overall')
 plt.ylabel('Value(£)')
-plt.show()
+plt.savefig(os.path.join(script_dir, "../../images/clustering_scatter_plot.png"))
+plt.close()
 
 print("DataFrame with Cluster Assignment:")
 print(df_players[['Name', 'Value(£)', 'Overall', 'Cluster_Labels']])

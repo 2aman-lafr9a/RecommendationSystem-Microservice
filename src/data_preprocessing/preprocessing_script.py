@@ -17,6 +17,10 @@ file_path = os.path.join(script_dir, "../../data/raw/players_football_ds.csv")
 df = pd.read_csv(file_path)
 df.head()
 
+# Specify the directory to save images
+images_dir = os.path.join(script_dir, "../../images")
+os.makedirs(images_dir, exist_ok=True)
+
 # %% [markdown]
 # ## **Step 1: Data Exploration**
 
@@ -58,6 +62,12 @@ df = df.dropna()
 
 print("Missing values after cleaning:", df.isnull().sum())
 print("Duplicate rows after cleaning:", df.duplicated().sum())
+
+plt.figure()
+sns.histplot(df['Value(£)'], kde=True)
+plt.title('Cleaned Distribution')
+plt.savefig(os.path.join(images_dir, "cleaned_distribution.png"))
+plt.close()
 
 # %% [markdown]
 # + **INTERPRETATION**
@@ -108,12 +118,17 @@ plt.figure(figsize=(12, 6))
 plt.subplot(1, 2, 1)
 sns.histplot(df['Value(£)'], kde=True)
 plt.title('Original Distribution')
+plt.savefig(os.path.join(images_dir, "original_distribution.png"))
+plt.close()
+
 
 plt.subplot(1, 2, 2)
 sns.histplot(df['Log_Value'], kde=True)
 plt.title('Log-Transformed Distribution')
+plt.savefig(os.path.join(images_dir, "log_transformed_distribution.png"))
 
-plt.show()
+# plt.show()
+plt.close()
 
 # %% [markdown]
 # + **INTERPRETATION**

@@ -144,10 +144,14 @@ def recommendation_system(player_data):
         top_recommendations = sorted(selected_insurance_ids, key=lambda x: sorted_cluster_insurance_ratings[sorted_cluster_insurance_ratings['insuranceId'] == x]['rating'].iloc[0], reverse=True)
 
 
-    # Export predictions to CSV
-    predictions_df = pd.DataFrame(list(predictions.items()), columns=['Insurance', 'Predicted_Rating'])
+    selected_insurances_info = df_insurances[df_insurances['insuranceId'].isin(top_recommendations)]
+    selected_insurances_info = selected_insurances_info.set_index('insuranceId').loc[top_recommendations].reset_index()
+
+    print(selected_insurances_info)
+
     csv_filename = f'../../data/recommended/predictions.csv'
-    predictions_df.to_csv(csv_filename, index=False)
+    selected_insurances_info[['insuranceId', 'name', 'type', 'description', 'price', 'date']].to_csv(csv_filename, index=False)
+
 
     return top_recommendations, csv_filename
 
