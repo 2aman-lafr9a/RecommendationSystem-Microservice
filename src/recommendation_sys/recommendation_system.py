@@ -39,10 +39,12 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # Construct the file path using os.path.join
-file_path = os.path.join(script_dir, "../../data/trained/clustered_players.csv")
-df_players = pd.read_csv(file_path)
+# file_path = os.path.join(script_dir, "../../data/trained/clustered_players.csv")
+# df_players = pd.read_csv(file_path)
 
 def recommendation_system(player_data):
+
+
     # Set the working directory to the location of your script
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
@@ -51,6 +53,9 @@ def recommendation_system(player_data):
     file_path = os.path.join(script_dir, "../../data/trained/clustered_players.csv")
     df_players = pd.read_csv(file_path)
 
+    player_data['playerId'] = len(df_players) + 1
+
+
     # print(df_players.head())
 
     # Load scaler and kmeans model
@@ -58,11 +63,11 @@ def recommendation_system(player_data):
     kmeans = pd.read_pickle("../model/kmeans_model.pkl")
 
      # Connect to the PostgreSQL databases with different ports
-    ratings_conn = connect_to_database(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+    # ratings_conn = connect_to_database(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
     #!! insurances_conn = connect_to_database('aman.francecentral.cloudapp.azure.com', 5432, 'postgres', 'postgres', 'agency_offers_database')
 
     # Extract data from the ratings and insurances tables
-    df_ratings = extract_ratings_data(ratings_conn)
+    # df_ratings = extract_ratings_data(ratings_conn)
     #!! df_insurances = extract_insurances_data(insurances_conn)
 
 
@@ -90,9 +95,9 @@ def recommendation_system(player_data):
     cluster_insurances = insurance_of_cluster_players(player_id, df_players, df_insurances)
 
     # Check if the extracted data is sufficient
-    if len(df_ratings) < 10:
-        # Generate fake data in casee if the getting rating data from database is fake 
-        ratings_data = generate_ratings_data(player_id, cluster_insurances, df_players)
+    # if len(df_ratings) < 10:
+    #     # Generate fake data in casee if the getting rating data from database is fake 
+    ratings_data = generate_ratings_data(player_id, cluster_insurances, df_players)
     
 
     df_ratings = pd.DataFrame(ratings_data)
@@ -152,8 +157,9 @@ def recommendation_system(player_data):
     csv_filename = f'../../data/recommended/predictions.csv'
     selected_insurances_info[['insuranceId', 'name', 'type', 'description', 'price', 'date']].to_csv(csv_filename, index=False)
 
+    recommended_insurances = selected_insurances_info.to_dict(orient='records')
 
-    return top_recommendations, csv_filename
+    return recommended_insurances, csv_filename
 
 
 def classify_and_add_user(new_user_df, players_df, kmeans_model, scaler_model):
@@ -315,15 +321,14 @@ def top_k_recommendations(predicted_ratings, k=5):
 
 ##** Here just for testing 
 
-# Example Usage:
-new_player_data = {
-    'Name': 'New Player',
-    'Age': 25,
-    'Overall': 80,
-    'Value(£)': 4000000,
-    'playerId': len(df_players) + 1
-}
+# new_player_data = {
+#     'Name': 'New Player',
+#     'Age': 25,
+#     'Overall': 80,
+#     'Value(£)': 4000000,
+#     # 'playerId': len(df_players) + 1
+# }
 
-top_recommendations, csv_filename = recommendation_system(new_player_data)
-print("Top Recommendations:", top_recommendations)
-print(f"Predictions exported to {csv_filename}")
+# top_recommendations, csv_filename = recommendation_system(new_player_data)
+# print("Top Recommendations:", top_recommendations)
+# print(f"Predictions exported to {csv_filename}")
