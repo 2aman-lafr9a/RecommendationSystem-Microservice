@@ -1,10 +1,6 @@
 name: model-recommendation-system
 
-on:
-  push:
-    branches:
-      - main
-      
+on: [push]
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -20,7 +16,7 @@ jobs:
 
       - name: Set Python version
         run: |
-          echo "::set-env name=PYTHON_VERSION::3.9"
+          echo "::set-env name=PYTHON_VERSION::3.11"
 
       - name: Update Pip
         run: python -m pip install --upgrade pip
@@ -33,10 +29,10 @@ jobs:
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python ./src/data_preprocessing/preprocessing_script.py
+          python src/data_preprocessing/preprocessing_script.py
 
           echo "## Pre-processing metrics" > report.md
           echo "### Data viz" >> report.md
-          cml-publish ./images/cleaned_distribution.png >> report.md
-          cml-publish ./images/original_distribution.png >> report.md
-          cml-publish ./images/log_transformed_distribution.png >> report.md
+          cml-publish images/cleaned_distribution.png >> report.md
+          cml-publish images/original_distribution.png >> report.md
+          cml-publish images/log_transformed_distribution.png >> report.md
