@@ -12,6 +12,7 @@ jobs:
         run: |
           # Your ML workflow goes here
           python -m pip install --upgrade pip
+          pip install contourpy
           pip install -r requirements.txt
           python src/data_preprocessing/preprocessing_script.py
 
