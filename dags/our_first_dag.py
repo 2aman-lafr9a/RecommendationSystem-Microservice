@@ -8,6 +8,7 @@ import os
 import sys
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
+
 project_root = os.path.abspath(os.path.join(script_dir, '..'))
 sys.path.append(project_root)
 
@@ -50,7 +51,6 @@ with DAG(
         bash_command=f'mv /../../images/*.png /../../images_backup/',
         # dag=dag,
     )
-
 
     preprocessing_task >> training_task >> move_images_task
 
