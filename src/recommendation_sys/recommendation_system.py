@@ -326,7 +326,6 @@ def top_k_recommendations(predicted_ratings, k=5):
 #     'Age': 25,
 #     'Overall': 80,
 #     'Value(£)': 4000000,
-#     # 'playerId': len(df_players) + 1
 # }
 
 # top_recommendations, csv_filename = recommendation_system(new_player_data)
