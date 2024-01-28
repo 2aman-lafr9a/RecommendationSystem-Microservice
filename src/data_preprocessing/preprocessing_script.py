@@ -1,184 +1,89 @@
-# %% [markdown]
-# ## **Part 1-  Data Preproccessing**
-
-# %%
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
-
 import os
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
-file_path = os.path.join(script_dir, "data/raw/players_football_ds.csv")
+def data_preprocessing():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(script_dir)
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../data/raw/players_football_ds.csv")
 
-df = pd.read_csv(file_path)
-df.head()
+    # Load the dataset
+    df = pd.read_csv(file_path)
 
-# Specify the directory to save images
-images_dir = os.path.join(script_dir, "../../images")
-os.makedirs(images_dir, exist_ok=True)
+    # Specify the directory to save images
+    images_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../images")
+    os.makedirs(images_dir, exist_ok=True)
 
-# %% [markdown]
-# ## **Step 1: Data Exploration**
+    # Step 1: Data Exploration
+    print("\n--------- Describing the ds ---------")
+    print(df.describe())
 
-# %% [markdown]
-# + **LOGIC**
+    print("\n--------- Discovering the ds ---------")
+    print(df.info())
 
-# %%
-# Describing the ds
-print("\n--------- Describing the ds ---------")
-print(df.describe())
+    print("\n--------- Missing values ---------")
+    print(df.isnull().sum())
 
-# Discovering the ds
-print("\n--------- Discovering the ds ---------")
-print(df.info())
+    print("\n--------- Duplicating values or rows ---------")
+    print("Duplicate rows:", df.duplicated().sum())
 
-## Checking if there are any mssing values
-print("\n--------- Messing values ---------")
-print(df.isnull().sum())
+    # Step 2: Data Cleaning and Handling Missing Values
+    df = df.drop_duplicates()
+    df = df.dropna()
 
-# Check for duplicate rows
-print("\n--------- Duplicating values or rows ---------")
-print("Duplicate rows:", df.duplicated().sum())
+    print("Missing values after cleaning:", df.isnull().sum())
+    print("Duplicate rows after cleaning:", df.duplicated().sum())
 
-# %% [markdown]
-# + **INTERPRETATION**
+    plt.figure()
+    sns.histplot(df['Value(£)'], kde=True)
+    plt.title('Cleaned Distribution')
+    plt.savefig(os.path.join(images_dir, "cleaned_distribution.png"))
+    plt.close()
 
-# %% [markdown]
-# ## **Step 2: Data Cleaning and Handling Missing Values**
+    # Step 3: Feature Engineering
+    bins = [15, 20, 25, 30, 35, 40, 50, 60]
+    labels = ['15-20', '21-25', '26-30', '31-35', '36-40', '41-50', '51-60']
+    df['Age_Group'] = pd.cut(df['Age'], bins=bins, labels=labels, right=False)
 
-# %% [markdown]
-# + **LOGIC**
+    bins = [40, 50, 60, 70, 80, 90, 100]
+    labels = ['40-50', '51-60', '61-70', '71-80', '81-90', '91-100']
+    df['Overall_Group'] = pd.cut(df['Overall'], bins=bins, labels=labels, right=False)
 
-# %%
-# Droping any duplicate rows if existe
-df = df.drop_duplicates()
+    df['Log_Value'] = np.log1p(df['Value(£)'])
+    df['Age_Rating'] = df['Age'] * df['Overall']
+    df = df.drop(['Nationality'], axis=1)
 
-# Droping rows that contains missing values
-df = df.dropna()
+    plt.figure(figsize=(12, 6))
+    plt.subplot(1, 2, 1)
+    sns.histplot(df['Value(£)'], kde=True)
+    plt.title('Original Distribution')
+    plt.savefig(os.path.join(images_dir, "original_distribution.png"))
+    plt.close()
 
-print("Missing values after cleaning:", df.isnull().sum())
-print("Duplicate rows after cleaning:", df.duplicated().sum())
+    plt.subplot(1, 2, 2)
+    sns.histplot(df['Log_Value'], kde=True)
+    plt.title('Log-Transformed Distribution')
+    plt.savefig(os.path.join(images_dir, "log_transformed_distribution.png"))
+    plt.close()
 
-plt.figure()
-sns.histplot(df['Value(£)'], kde=True)
-plt.title('Cleaned Distribution')
-plt.savefig(os.path.join(images_dir, "cleaned_distribution.png"))
-plt.close()
+    # Step 4: Data Normalization/Scaling
+    print("-----------BEFORE----------")
+    print(df.head())
 
-# %% [markdown]
-# + **INTERPRETATION**
+    features_to_normalize = ['Age', 'Overall', 'Value(£)', 'Log_Value', 'Age_Rating']
+    scaler = StandardScaler()
+    df[features_to_normalize] = scaler.fit_transform(df[features_to_normalize])
 
-# %% [markdown]
-# ## **Step 3: Feature Engineering**
+    print("\n-----------AFTER----------")
+    print(df.head())
 
-# %% [markdown]
-# + **LOGIC**
+    # Step 5: Save Preprocessed Data
+    output_path = '../../data/processed/preprocessed_data_v1.csv'
+    df.to_csv(output_path, index=False)
+    print(f"Preprocessed data saved to: {output_path}")
 
-# %%
-
-# Here just grouping the ages
-bins = [15, 20, 25, 30, 35, 40, 50, 60]
-labels = ['15-20', '21-25', '26-30', '31-35', '36-40', '41-50', '51-60']
-df['Age_Group'] = pd.cut(df['Age'], bins=bins, labels=labels, right=False)
-
-# Overall Rating Grouping
-bins = [40, 50, 60, 70, 80, 90, 100]
-labels = ['40-50', '51-60', '61-70', '71-80', '81-90', '91-100']
-df['Overall_Group'] = pd.cut(df['Overall'], bins=bins, labels=labels, right=False)
-
-# Log Transformation for Value(£)
-df['Log_Value'] = np.log1p(df['Value(£)'])
-
-# before log transformation
-# original_skewness = df['Value(£)'].skew()
-
-# after log transformation
-# log_transformed_skewness = df['Log_Value'].skew()
-
-# print(f"asymtre before log transformation: {original_skewness}")
-# print(f"asymetre after log transformation: {log_transformed_skewness}")
-
-
-# Combine Age and Overall Rating
-df['Age_Rating'] = df['Age'] * df['Overall']
-
-# Remove teh nationality
-df = df.drop(['Nationality'], axis=1)
-
-
-print(df.head())
-
-# %%
-
-plt.figure(figsize=(12, 6))
-plt.subplot(1, 2, 1)
-sns.histplot(df['Value(£)'], kde=True)
-plt.title('Original Distribution')
-plt.savefig(os.path.join(images_dir, "original_distribution.png"))
-plt.close()
-
-
-plt.subplot(1, 2, 2)
-sns.histplot(df['Log_Value'], kde=True)
-plt.title('Log-Transformed Distribution')
-plt.savefig(os.path.join(images_dir, "log_transformed_distribution.png"))
-
-# plt.show()
-plt.close()
-
-# %% [markdown]
-# + **INTERPRETATION**
-
-# %% [markdown]
-# ## **Step 4: Data Normalization/Scaling (if needed)**
-
-# %% [markdown]
-# + **LOGIC**
-
-# %%
-print("-----------BEFORE----------")
-print(df.head())
-
-
-# extract the features for normalization
-features_to_normalize = ['Age', 'Overall', 'Value(£)', 'Log_Value', 'Age_Rating']
-
-scaler = StandardScaler()
-
-# normalize the selected features
-df[features_to_normalize] = scaler.fit_transform(df[features_to_normalize])
-
-
-print("\n-----------AFTER----------")
-print(df.head())
-
-
-# %% [markdown]
-# + **INTERPRETATION**
-
-# %% [markdown]
-# ## **Step 5: Save Preprocessed Data**
-
-# %% [markdown]
-# + **LOGIC**
-
-# %%
-# specify dest path
-output_path = '../../data/processed/preprocessed_data_v1.csv'
-
-# Save the preprocessed df in new csv file
-df.to_csv(output_path, index=False)
-
-print(f"Preprocessed data saved to: {output_path}")
-
-# df_processed = pd.read_csv("../../data/processed/preprocessed_data.csv")
-# df_processed.head()
-
-# %% [markdown]
-# + **INTERPRETATION**
-
-
+if __name__ == "__main__":
+    data_preprocessing()
