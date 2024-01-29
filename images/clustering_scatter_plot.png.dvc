@@ -1,0 +1,5 @@
+outs:
+- md5: d6662f04d788305d985ce51db4c484e0
+  size: 48026
+  hash: md5
+  path: clustering_scatter_plot.png

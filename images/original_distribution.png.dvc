@@ -1,0 +1,5 @@
+outs:
+- md5: c6c002f551ea46e5c9b85aeeadcdcd6f
+  size: 22380
+  hash: md5
+  path: original_distribution.png

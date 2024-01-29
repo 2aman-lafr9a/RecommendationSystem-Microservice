@@ -1,0 +1,5 @@
+outs:
+- md5: 3d5c39fb654eba4c06f689d73fb4a76c
+  size: 33173
+  hash: md5
+  path: elbow_curve.png

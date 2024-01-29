@@ -1,0 +1,5 @@
+outs:
+- md5: 6c56e682be8d6fdd4043917f4ac7113b
+  size: 19501
+  hash: md5
+  path: cleaned_distribution.png
